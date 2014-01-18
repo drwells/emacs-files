@@ -32,11 +32,12 @@
 (set-face-foreground 'minibuffer-prompt "thistle1")
 (set-face-foreground 'font-lock-negation-char-face "red")
 
-; modify the syntax highlighting if in gui mode
-(if window-system
-    (progn (set-face-background 'default "grey12")
-           ; italicize comments
-           (copy-face 'italic 'font-lock-comment-face)
-           ; back to grey.
-           (set-face-foreground 'font-lock-comment-face "orange")
-           nil))
+;; modify the syntax highlighting if in gui mode
+(add-hook 'prog-mode-hook
+          (lambda ()
+            (if (display-graphic-p)
+                (progn
+                  (set-face-background 'default "grey12")
+                  (make-face-italic 'font-lock-comment-face)
+                  (set-face-foreground 'font-lock-comment-face "orange")
+                  nil))))
