@@ -4,8 +4,6 @@
 ;; remember - to reload, do M-x load-file <enter> <enter> (default name is
 ;; current file)
 ;;----------------------------------------------------------------------------
-;; Preferences
-;;----------------------------------------------------------------------------
 
 (require 'package)
 (add-to-list 'package-archives
@@ -92,6 +90,14 @@
               nil)))
 (setq vtex-enable-align-continuation nil)
 (setq vtex-enable-delete-trailing-whitespace nil)
+
+;; magit stuff
+(eval-after-load 'magit
+  '(progn
+     (set-face-foreground 'magit-diff-add "green4")
+     (set-face-foreground 'magit-diff-del "firebrick3")
+     (when (not window-system)
+       (set-face-background 'magit-item-highlight "black"))))
 
 ;; markdown stuff
 (add-to-list 'auto-mode-alist '("/*.\.md$" . markdown-mode))
