@@ -129,5 +129,6 @@
 
 ;; stuff for aquamacs. Ensure that this is the last line so that all
 ;; the variables are reset correctly. Otherwise do stuff for GNU/Linux.
-(if (boundp 'aquamacs-version) (load "~/.emacs.d/aquamacs.el")
+(if (eq system-type 'darwin)
+    (load "~/.emacs.d/aquamacs.el")
   (setq-default ispell-program-name "aspell"))
