@@ -76,6 +76,7 @@
 
 (defvar vtex-mode-map
   (let ((vtm (make-keymap)))
+    (define-key vtm "\M-q" 'vtex-fill-paragraph)
     (define-key vtm "\C-j" 'newline-and-indent)
     (define-key vtm [remap comment-dwim] 'vtex-comment-dwim)
     (define-key vtm [remap comment-region] 'vtex-comment-dwim)
@@ -221,7 +222,8 @@
 ;; paragraph filling
 (defconst vtex-block-terminator-regexp
   (concat "^ *$\\|" "[^\\]%\\|" (regexp-opt
-           '("\\section" "\\subsection" "\\subsubsection" "\\begin" "\\end")))
+           '("\\[" "\\]" "\\section{" "\\subsection{" "\\subsubsection{"
+             "\\begin{" "\\end{")))
   "regexp to match at the end of a LaTeX block.")
 
 (defun vtex--find-paragraph-border (direction)
@@ -245,7 +247,7 @@ paragraph terminator, then return nil."
        (t (error (concat "unrecognized direction;"
                          "should be `up' or `down'")))))))
 
-(defun vtex-fill-paragraph (arg)
+(defun vtex-fill-paragraph ()
   "Call fill-region based on a narrowed range."
   (interactive)
   ;; TODO just call fill-paragraph if inside a comment. Make sure that this is
@@ -254,7 +256,9 @@ paragraph terminator, then return nil."
         (last-char (vtex--find-paragraph-border 'down)))
     (if (or (eq first-char nil) (eq last-char nil))
         (message "At recognized keyword; no need to reformat")
-      (fill-region first-char last-char))))
+      (save-restriction
+        (narrow-to-region first-char last-char)
+        (fill-individual-paragraphs (point-min) (point-max))))))
 
 (define-derived-mode vtex-mode prog-mode
   "Major mode for editing LaTeX files."
