@@ -271,15 +271,15 @@ paragraph terminator, then return nil."
     (set (make-local-variable 'font-lock-defaults) '(vtex-font-lock-keywords))
     (set (make-local-variable 'indent-line-function) 'vtex-indent-line)
     (set (make-local-variable 'indent-region) 'vtex-indent-region)
+    (set (make-local-variable 'adaptive-fill-regexp) nil)
     ; should this be set as local?
     (set (make-local-variable 'fill-paragraph-function) 'vtex-fill-paragraph)
     (setq major-mode 'vtex-mode)
     (setq mode-name "VTEX")
-    ;; TODO get rid of this?
-    (add-hook 'before-save-hook (lambda ()
-                                  (progn (font-lock-fontify-buffer))) nil t)
-    (add-hook 'before-save-hook (lambda ()
-                                  (vtex-align-continuation-right-buffer)))))
+    (add-hook 'before-save-hook
+              (lambda () (progn (font-lock-fontify-buffer))) nil t)
+    (add-hook 'before-save-hook
+              (lambda () (vtex-align-continuation-right-buffer)) nil t)))
 
 (provide 'vtex-mode)
 ;;; vtex-mode.el ends here
