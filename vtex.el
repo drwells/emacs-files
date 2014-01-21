@@ -42,8 +42,8 @@
             "\\>")
           . font-lock-keyword-face)
         '("section{\\(.*\\)}" 1 font-lock-builtin-face)
-        '("begin{\\(.*\\)}" 1 font-lock-builtin-face)
-        '("end{\\(.*\\)}" 1 font-lock-builtin-face))
+        '("begin{\\([^}]*\\)}" 1 font-lock-builtin-face)
+        '("end{\\([^}]*\\)}" 1 font-lock-builtin-face))
   "Additional keywords to highlight in VTEX mode.")
 
 (defconst vtex-font-lock-math-delimiters
@@ -59,11 +59,11 @@
   "catch special backslashed terms.")
 
 (defvar vtex-font-lock-keywords
-  (append vtex-font-lock-math-delimiters
-          vtex-font-lock-sectioning
+  (append vtex-font-lock-sectioning
           vtex-font-lock-keywords-1
           vtex-font-lock-catch-backslash
-          vtex-font-lock-catch-backslash-special)
+          vtex-font-lock-catch-backslash-special
+          vtex-font-lock-math-delimiters)
   "Default highlighting expressions for VTEX mode.")
 
 (defvar vtex-syntax-table
