@@ -14,7 +14,7 @@
 (defconst vtex-font-lock-keywords-1
   ; just so that I can check what colors do what.
   (list
-   ; match                                                                    \\
+   ; match \\
    '("\\(\\\\\\\\\\)" 1 font-lock-negation-char-face)
    '("\\(aaaaa\\)" 1 font-lock-warning-face)
    '("\\(bbbbb\\)" 1 font-lock-function-name-face)
