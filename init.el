@@ -124,9 +124,10 @@
             (define-key outline-minor-mode-map [(shift tab)] 'org-cycle)))
 
 ;; Python stuff
-(setq auto-mode-alist (append '(("/*.\.sage$" . python-mode))
-                              auto-mode-alist))
-(add-to-list 'auto-mode-alist '("\\.py" . python-mode))
+(add-to-list 'auto-mode-alist '("/*.\.sage" . python))
+(add-hook 'python-mode-hook
+          (lambda ()
+              (load-file "~/.emacs.d/pythonmaster.el")))
 
 ;; Scheme stuff
 (setq scheme-program-name "guile")
