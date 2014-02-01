@@ -84,9 +84,11 @@
   "Keymap for VTEX major mode")
 
 ;; some utility regexps
-(defconst vtex--new-LaTeX-block
-  ;; TODO find some way to permit any non-"%" character.
-  (regexp-opt '("^ *\\section" "^ *\\subsubsection")))
+(defconst vtex-block-terminator-regexp
+  (concat "^ *$\\|" "[^\\]%\\|" (regexp-opt
+           '("\\[" "\\]" "\\section{" "\\subsection{" "\\subsubsection{"
+             "\\begin{" "\\end{")))
+  "regexp to match at the beginning or end of a LaTeX block.")
 
 ;; indentation
 (defun vtex-matching-begin-indent ()
@@ -220,12 +222,6 @@
           nil))))))
 
 ;; paragraph filling
-(defconst vtex-block-terminator-regexp
-  (concat "^ *$\\|" "[^\\]%\\|" (regexp-opt
-           '("\\[" "\\]" "\\section{" "\\subsection{" "\\subsubsection{"
-             "\\begin{" "\\end{")))
-  "regexp to match at the end of a LaTeX block.")
-
 (defun vtex--find-paragraph-border (direction)
   "Find the first or last character of a LaTeX block by
 `vtex-block-terminator-regexp'. If the current line matches the
