@@ -58,6 +58,10 @@
 ;; C stuff
 (add-hook 'c-mode-common-hook (lambda () (load "~/.emacs.d/cmaster.el")))
 
+;; comint-mode stuff
+(add-hook 'comint-output-filter-functions
+          'comint-truncate-buffer)
+
 ;; D stuff
 (autoload 'd-mode "d-mode" "Major mode for editing D code." t)
 (add-to-list 'auto-mode-alist '("\.d[i]?\'" . d-mode))
