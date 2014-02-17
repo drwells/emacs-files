@@ -7,6 +7,7 @@
     (setq aquamacs-scratch-file nil
           initial-major-mode 'lisp-interaction-mode))
   (progn
+    (setq ring-bell-function 'ignore)
     (set-default-font (concat "-apple-bitstream vera sans mono-medium-r-normal-"
                               "-12-120-72-72-m-120-iso10646-1"))))
 
@@ -15,6 +16,4 @@
 (setq python-python-command "/Users/drwells/Applications/python")
 
 (set-face-attribute 'default nil :height 130)
-
-; Yegge's suggestion
-(global-set-key "\C-x\C-m" 'execute-extended-command)
+(global-unset-key (kbd "s-p"))
