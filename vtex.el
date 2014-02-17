@@ -1,53 +1,56 @@
-(defvar vtex-mode-hook nil)
+;;; vtex.el --- A lightweight LaTeX mode for emacs.
 
-(defconst vtex-version 0.1
+;; Copyright (C) 2014 David Wells
+
+;; Author: David Wells <drwells @ virginia tech email>
+;; Version: 0.2
+;; Keywords: LaTeX
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; A modern (and incomplete) replacement for AUCTeX.
+;;
+
+;;; Code:
+(defconst vtex-version 0.2
   "alpha copy of vtex.")
 
-(defun vtex-comment-dwim (arg)
-  "Comment blocks via newcomment."
-  (interactive "*P")
-  (require 'newcomment)
-  (let ((comment-start "%") (comment-end ""))
-    (comment-dwim arg)))
-
 ;; syntax highlighting
-(defconst vtex-font-lock-keywords-1
-  ; just so that I can check what colors do what.
-  (list
-   ; match \\
-   '("\\(\\\\\\\\\\)" 1 font-lock-negation-char-face)
-   '("\\(aaaaa\\)" 1 font-lock-warning-face)
-   '("\\(bbbbb\\)" 1 font-lock-function-name-face)
-   '("\\(ccccc\\)" 1 font-lock-variable-name-face)
-   '("\\(ddddd\\)" 1 font-lock-keyword-face)
-   '("\\(eeeee\\)" 1 font-lock-comment-face)
-   '("\\(fffff\\)" 1 font-lock-comment-delimiter-face)
-   '("\\(ggggg\\)" 1 font-lock-type-face)
-   '("\\(hhhhh\\)" 1 font-lock-constant-face)
-   '("\\(iiiii\\)" 1 font-lock-builtin-face)
-   '("\\(jjjjj\\)" 1 font-lock-preprocessor-face)
-   '("\\(kkkkk\\)" 1 font-lock-string-face)
-   '("\\(lllll\\)" 1 font-lock-doc-face)
-   '("\\(mmmmm\\)" 1 font-lock-constant-face)
-   '("\\(nnnnn\\)" 1 font-lock-negation-char-face)
-   '("\\(ooooo\\)" 1 font-lock-reference-face))
-   "Minimal highlighting expressions for VTEX mode.")
+(defun vtex--font-lock-opt (string-list font-lock-input &optional paren)
+  "Utility functon to apply regexp-opt to `string-list' and form a list of a cons
+   cell with `font-lock-input'."
+  (progn
+    (if (eq paren 'word-right)
+        (setq regex (concat (regexp-opt string-list) "\\>"))
+      (setq regex (regexp-opt string-list paren)))
+    (list `(,regex . ,font-lock-input))))
 
 (defconst vtex-font-lock-sectioning
-  ; section, subsection, subsubsection
-  (list `(,(concat
-            (regexp-opt
-  ; append "\\>" so that we match "\section" but not "\sectionX"
-             '("\\section" "\\subsection" "\\subsubsection" "\\begin" "\\end"))
-            "\\>")
-          . font-lock-keyword-face)
-        '("section{\\(.*\\)}" 1 font-lock-builtin-face)
-        '("begin{\\([^}]*\\)}" 1 font-lock-builtin-face)
-        '("end{\\([^}]*\\)}" 1 font-lock-builtin-face))
+  (list
+   '("section{\\(.*\\)}$" 1 font-lock-builtin-face)
+   '("begin{\\([^}]*\\)}" 1 font-lock-builtin-face)
+   '("end{\\([^}]*\\)}" 1 font-lock-builtin-face)
+   (car (vtex--font-lock-opt
+    '("\\section" "\\subsection" "\\subsubsection" "\\begin" "\\end")
+    font-lock-keyword-face 'word-right))
+   )
   "Additional keywords to highlight in VTEX mode.")
 
 (defconst vtex-font-lock-math-delimiters
-  (list '("\\\\[]()[]" . font-lock-string-face))
+  (vtex--font-lock-opt '("\\(" "\\)" "\\[" "\\]" "$") font-lock-string-face)
   "Math delimiters.")
 
 (defconst vtex-font-lock-catch-backslash
@@ -55,40 +58,51 @@
   "catch additional backslashed terms.")
 
 (defconst vtex-font-lock-catch-backslash-special
-  (list '("\\(\\\\[%&$#]\\|\\(&=\\)\\)" . font-lock-negation-char-face))
-  "catch special backslashed terms.")
+  (vtex--font-lock-opt '("\\&" "\\%" "\\#" "\\\\") font-lock-negation-char-face)
+  "Catch special backslashed terms.")
+
+(defconst vtex-font-lock-math-align
+  (vtex--font-lock-opt '("&" "&=" "&\\leq" "&\\geq" "&<" "&>")
+                       font-lock-negation-char-face)
+  "Math alignment terms.")
+
+(defconst vtex-font-lock-misc-keywords
+  (vtex--font-lock-opt
+   '("\\label" "\\eqref" "\\cite" "\\newcommand" "\\input" "\\include"
+     "\\RequirePackage" "\\usepackage" "\\documentclass" "\\setcounter")
+   font-lock-function-name-face)
+  "Miscellaneous keywords.")
+
+(defconst vtex-font-lock-spacing-commands
+  (vtex--font-lock-opt
+   '("\\quad" "\\," "\\thinmuskip" "\\!" "\\>" "\\;" "\\:" "\\enspace" "\\qquad"
+     "\\hspace" "\\hphantom" "\\hfill")
+   font-lock-function-name-face)
+  "Common spacing commands.")
 
 (defvar vtex-font-lock-keywords
   (append vtex-font-lock-sectioning
-          vtex-font-lock-keywords-1
+          vtex-font-lock-math-delimiters
+          vtex-font-lock-math-align
+          vtex-font-lock-misc-keywords
+          vtex-font-lock-spacing-commands
           vtex-font-lock-catch-backslash
-          vtex-font-lock-catch-backslash-special
-          vtex-font-lock-math-delimiters)
+          vtex-font-lock-catch-backslash-special)
   "Default highlighting expressions for VTEX mode.")
 
 (defvar vtex-syntax-table
   (let ((vtex-mode-syntax-table (make-syntax-table)))
-    (modify-syntax-entry ?_ "w" vtex-mode-syntax-table)
     (modify-syntax-entry ?% "< b" vtex-mode-syntax-table)
     (modify-syntax-entry ?\n "> b" vtex-mode-syntax-table)
     vtex-mode-syntax-table)
   "Syntax table for VTEX mode.")
 
-(defvar vtex-mode-map
-  (let ((vtm (make-keymap)))
-    (define-key vtm "\M-q" 'vtex-fill-paragraph)
-    (define-key vtm "\C-j" 'newline-and-indent)
-    (define-key vtm [remap comment-dwim] 'vtex-comment-dwim)
-    (define-key vtm [remap comment-region] 'vtex-comment-dwim)
-    vtm)
-  "Keymap for VTEX major mode")
-
-;; some utility regexps
+;; utility regexps
 (defconst vtex-block-terminator-regexp
   (concat "^ *$\\|" "[^\\]%\\|" (regexp-opt
            '("\\[" "\\]" "\\section{" "\\subsection{" "\\subsubsection{"
-             "\\begin{" "\\end{")))
-  "regexp to match at the beginning or end of a LaTeX block.")
+             "\\begin{" "\\end{" "\\label{")))
+  "regexp to match at the end of a LaTeX block.")
 
 ;; indentation
 (defun vtex-matching-begin-indent ()
@@ -131,30 +145,44 @@
       (forward-line -1)
       (beginning-of-line)
       (cond
-       ((bobp) (indent-line-to 0))
+       ((bobp)
+        (progn
+          (message "using (bobp) to indent")
+          (indent-line-to 0)))
        ((looking-at "^ *\\\\section")
         (progn
+          ;; check sectioning.
+          (message "using \\section to indent")
           (indent-line-to 0)
           (setq vtex-next-indent 4)))
        ((looking-at "^ *\\\\subsection")
         (progn
+          (message "using \\subsection to indent")
           (indent-line-to 4)
           (setq vtex-next-indent 8)))
        ((looking-at "^ *\\\\subsubsection")
         (progn
+          (message "using \\subsubsection to indent")
           (indent-line-to 8)
           (setq vtex-next-indent 12)))
+       ;; check for "\item".
+       ((looking-at "^ *\\\\item ")
+        (progn
+          (message "using \\item to indent")
+          (setq vtex-next-indent (+ 6 (current-indentation)))))
+       ;; check begin/end blocks.
        ((and (looking-at "^.*\\\\begin")
              (not (looking-at "^.*\\\\begin{document}")))
         (progn
+          (message "using \\begin to indent")
           (setq vtex-next-indent
                 (+ 4 (current-indentation)))))
        ((looking-at "^.*\\\\end")
         (progn
+          (message "using \\end to indent")
           (indent-line-to
            (vtex-matching-begin-indent))
-          (setq vtex-next-indent
-                (current-indentation))))
+          (setq vtex-next-indent (current-indentation))))
        ; Add code for checking to see if inside a math alignment block here.  If
        ; the previous line ended with "//", then indent to the "&=". Otherwise
        ; indent 3 more than last line (to align with previous "&=").
@@ -162,6 +190,7 @@
 ;;        (progn ))
        ((looking-at "^ *$")
         (progn
+          (message "using empty line to indent")
           (while (and (eq (current-indentation) 0)
                       (< vtex-look-count
                          vtex-max-look-count)
@@ -171,7 +200,10 @@
                   (1+ vtex-look-count)))
           (setq vtex-next-indent
                 (current-indentation))))
-       (t (setq vtex-next-indent (current-indentation))))))
+       (t
+        (progn
+          (message "using previous line to indent")
+          (setq vtex-next-indent (current-indentation)))))))
   (indent-line-to vtex-next-indent)
   ; end blocks are badly behaved. Check it again.
   (vtex-fix-end-block))
@@ -180,6 +212,7 @@
   "Based on my preferences for how indentation works (i.e. fix
    section locations while indenting), override the usual
    indent-region command."
+  (message "running vtex-indent-region")
   (interactive "r")
   (save-excursion
     (save-restriction
@@ -255,6 +288,26 @@ paragraph terminator, then return nil."
       (save-restriction
         (narrow-to-region first-char last-char)
         (fill-individual-paragraphs (point-min) (point-max))))))
+
+;; misc. functions
+(defun vtex-insert-backquote ()
+  "Insert ``|'' at point, and move the cursor to |."
+  (interactive)
+  (progn
+    (insert "``")
+    (insert "''")
+    (goto-char (- (point) 2))))
+
+;; mode configuration
+(defvar vtex-mode-hook nil)
+
+(defvar vtex-mode-map
+  (let ((vtm (make-keymap)))
+    (define-key vtm "`" 'vtex-insert-backquote)
+    (define-key vtm "\M-q" 'vtex-fill-paragraph)
+    (define-key vtm "\C-j" 'newline-and-indent)
+    vtm)
+  "Keymap for VTEX major mode")
 
 (define-derived-mode vtex-mode prog-mode
   "Major mode for editing LaTeX files."
