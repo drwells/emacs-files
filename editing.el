@@ -31,4 +31,5 @@
 ; remove single-quotes (for lisp programming). Maybe turn it on again for other
 ; modes? (not matlab)
 (sp-pair "'" nil :actions :rem)
+(sp-pair "`" nil :actions :rem)
 (setq sp-cancel-autoskip-on-backward-movement nil)
