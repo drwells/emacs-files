@@ -30,6 +30,7 @@
     (set-face-attribute 'default nil
                         :family "Monospace" :height 110))
 (custom-set-faces
+ '(term-color-blue ((t (:foreground "DodgerBlue1"))))
  '(mode-line ((t (:background "dim gray" :foreground "black" :box
                               (:line-width -1 :style released-button))))))
 (setq font-lock)
