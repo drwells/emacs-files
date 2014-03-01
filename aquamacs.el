@@ -17,3 +17,6 @@
 
 (set-face-attribute 'default nil :height 130)
 (global-unset-key (kbd "s-p"))
+
+(setq ispell-program-name "/sw/bin/aspell")
+(setq ispell-list-command "--list")
