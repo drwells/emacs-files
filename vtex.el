@@ -92,6 +92,7 @@
 
 (defvar vtex-syntax-table
   (let ((vtex-mode-syntax-table (make-syntax-table)))
+    (modify-syntax-entry ?: "w" vtex-mode-syntax-table)
     (modify-syntax-entry ?% "< b" vtex-mode-syntax-table)
     (modify-syntax-entry ?\n "> b" vtex-mode-syntax-table)
     vtex-mode-syntax-table)
