@@ -2,6 +2,11 @@
 (setq inhibit-x-resources t)
 (require 'linum) ; line numbers
 (when (featurep 'linum) (global-linum-mode 1))
+;; taken from http://www.emacswiki.org/LineNumbers
+(setq linum-disabled-modes-list '(eshell-mode term-mode compilation-mode))
+(defun linum-on ()
+  (unless (or (minibufferp) (member major-mode linum-disabled-modes-list))
+    (linum-mode 1)))
 
 ;; Other display stuff
 (column-number-mode t)
@@ -25,6 +30,7 @@
     (set-face-attribute 'default nil
                         :family "Monospace" :height 110))
 (custom-set-faces
+ '(term-color-blue ((t (:foreground "DodgerBlue1"))))
  '(mode-line ((t (:background "dim gray" :foreground "black" :box
                               (:line-width -1 :style released-button))))))
 (setq font-lock)

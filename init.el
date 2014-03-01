@@ -64,7 +64,6 @@
 
 ;; D stuff
 (autoload 'd-mode "d-mode" "Major mode for editing D code." t)
-(add-to-list 'auto-mode-alist '("\.d[i]?\'" . d-mode))
 (add-to-list 'auto-mode-alist '("/*.\.d$" . d-mode))
 
 ;; eshell stuff
@@ -82,6 +81,7 @@
 (ido-everywhere 1)
 (setq ido-enable-flex-matching t)
 (setq ido-file-extensions-order '(".c" ".org" ".el"))
+(global-set-key (kbd "C-x C-b") 'ido-switch-buffer)
 
 ;; LaTeX stuff
 (require 'vtex-mode "~/.emacs.d/vtex.el" nil)
@@ -124,7 +124,10 @@
             (define-key outline-minor-mode-map [(shift tab)] 'org-cycle)))
 
 ;; Python stuff
-(add-to-list 'auto-mode-alist '("/*.\.sage" . python))
+(add-to-list 'auto-mode-alist '("/*.\.sage" . python-mode))
+(add-to-list 'auto-mode-alist '("/*.\.pyx" . python-mode))
+(add-to-list 'auto-mode-alist '("/*.\.pxi" . python-mode))
+(add-to-list 'auto-mode-alist '("/*.\.pxd" . python-mode))
 (add-hook 'python-mode-hook
           (lambda ()
               (load-file "~/.emacs.d/pythonmaster.el")))
