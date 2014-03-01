@@ -64,7 +64,6 @@
 
 ;; D stuff
 (autoload 'd-mode "d-mode" "Major mode for editing D code." t)
-(add-to-list 'auto-mode-alist '("\.d[i]?\'" . d-mode))
 (add-to-list 'auto-mode-alist '("/*.\.d$" . d-mode))
 
 ;; eshell stuff
