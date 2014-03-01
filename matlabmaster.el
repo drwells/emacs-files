@@ -1,10 +1,13 @@
 (defun matlab--align-continuation-right (line)
   "Align the ... on the end of a string."
-    (let ((index (string-match "\\.\\.\\.\\s-*$" line)))
+  ; TODO make sure that this part is valid.
+    (let ((index (string-match "\\.\\.\\.\\s-*$"
+                               (replace-regexp-in-string " *\\.\\.\\.$" "..." line))))
       (cond
        ((eq index nil) line)
        (t (concat (substring line 0 index)
-                  (make-string (- fill-column index 3) ? )
+                  ; add appropriate spaces (or none if line too long)
+                  (make-string (max 0 (- fill-column index 3)) ? )
                   "...")))))
 
 (defun matlab-align-continuation-right-buffer ()

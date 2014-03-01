@@ -6,6 +6,7 @@
 (global-set-key "\C-cb" 'org-iswitchb)
 (setq org-log-done t) ; display timestamp when I complete something
 (setq org-agenda-files '("~/org/work.org" "/org/school.org" "/org/home.org"))
+(local-set-key (kbd "RET") 'org-return-indent)
 
 ;; use windmove.
 (add-hook 'org-shiftup-final-hook 'windmove-up)
