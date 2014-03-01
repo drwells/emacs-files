@@ -82,6 +82,7 @@
 (ido-everywhere 1)
 (setq ido-enable-flex-matching t)
 (setq ido-file-extensions-order '(".c" ".org" ".el"))
+(global-set-key (kbd "C-x C-b") 'ido-switch-buffer)
 
 ;; LaTeX stuff
 (require 'vtex-mode "~/.emacs.d/vtex.el" nil)
