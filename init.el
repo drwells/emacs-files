@@ -124,7 +124,10 @@
             (define-key outline-minor-mode-map [(shift tab)] 'org-cycle)))
 
 ;; Python stuff
-(add-to-list 'auto-mode-alist '("/*.\.sage" . python))
+(add-to-list 'auto-mode-alist '("/*.\.sage" . python-mode))
+(add-to-list 'auto-mode-alist '("/*.\.pyx" . python-mode))
+(add-to-list 'auto-mode-alist '("/*.\.pxi" . python-mode))
+(add-to-list 'auto-mode-alist '("/*.\.pxd" . python-mode))
 (add-hook 'python-mode-hook
           (lambda ()
               (load-file "~/.emacs.d/pythonmaster.el")))
