@@ -3,9 +3,10 @@
 (require 'linum) ; line numbers
 (when (featurep 'linum) (global-linum-mode 1))
 ;; taken from http://www.emacswiki.org/LineNumbers
-(setq linum-disabled-modes-list '(eshell-mode term-mode compilation-mode))
+(setq linum-disabled-modes
+      '(eshell-mode term-mode magit-mode compilation-mode))
 (defun linum-on ()
-  (unless (or (minibufferp) (member major-mode linum-disabled-modes-list))
+  (unless (or (minibufferp) (member major-mode linum-disabled-modes))
     (linum-mode 1)))
 
 ;; Other display stuff
