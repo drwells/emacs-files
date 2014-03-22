@@ -59,7 +59,8 @@
   "catch additional backslashed terms.")
 
 (defconst vtex-font-lock-catch-backslash-special
-  (vtex--font-lock-opt '("\\&" "\\%" "\\#" "\\\\") font-lock-negation-char-face)
+  (vtex--font-lock-opt '("\\&" "\\%" "\\$" "\\#" "\\\\")
+                       font-lock-negation-char-face)
   "Catch special backslashed terms.")
 
 (defconst vtex-font-lock-math-align
@@ -83,16 +84,17 @@
 
 (defvar vtex-font-lock-keywords
   (append vtex-font-lock-sectioning
+          vtex-font-lock-catch-backslash-special
           vtex-font-lock-math-delimiters
           vtex-font-lock-math-align
           vtex-font-lock-misc-keywords
           vtex-font-lock-spacing-commands
-          vtex-font-lock-catch-backslash
-          vtex-font-lock-catch-backslash-special)
+          vtex-font-lock-catch-backslash)
   "Default highlighting expressions for VTEX mode.")
 
 (defvar vtex-syntax-table
   (let ((vtex-mode-syntax-table (make-syntax-table)))
+    (modify-syntax-entry ?: "w" vtex-mode-syntax-table)
     (modify-syntax-entry ?% "< b" vtex-mode-syntax-table)
     (modify-syntax-entry ?\n "> b" vtex-mode-syntax-table)
     vtex-mode-syntax-table)
