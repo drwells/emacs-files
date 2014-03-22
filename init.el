@@ -66,6 +66,12 @@
 (autoload 'd-mode "d-mode" "Major mode for editing D code." t)
 (add-to-list 'auto-mode-alist '("/*.\.d$" . d-mode))
 
+;; dired stuff
+(require 'dired-x)
+(setq-default dired-omit-files-p t)
+(setq dired-omit-files
+      (concat dired-omit-files "\\|" "\\.pyc$"))
+
 ;; eshell stuff
 (add-hook 'eshell-mode-hook (lambda () (smartparens-mode t)))
 
