@@ -66,6 +66,12 @@
 (autoload 'd-mode "d-mode" "Major mode for editing D code." t)
 (add-to-list 'auto-mode-alist '("/*.\.d$" . d-mode))
 
+;; dired stuff
+(require 'dired-x)
+(setq-default dired-omit-files-p t)
+(setq dired-omit-files
+      (concat dired-omit-files "\\|" "\\.pyc$"))
+
 ;; eshell stuff
 (add-hook 'eshell-mode-hook (lambda () (smartparens-mode t)))
 
@@ -134,6 +140,10 @@
 
 ;; Scheme stuff
 (setq scheme-program-name "guile")
+
+;; smex
+(smex-initialize)
+(global-set-key (kbd "M-x") 'smex)
 
 ;; stuff for aquamacs. Ensure that this is the last line so that all
 ;; the variables are reset correctly. Otherwise do stuff for GNU/Linux.

@@ -1,3 +1,21 @@
+2014-02-26  Tassilo Horn  <tsdh@gnu.org>
+
+	Bump to 11.87.3.
+
+2014-02-26  Tassilo Horn  <tsdh@gnu.org>
+
+	Update font-latex.el to curren AUCTeX git version.
+
+	Fixes bug#16879.
+
+2014-01-30  Stefan Monnier  <monnier@iro.umontreal.ca>
+
+	* auctex.el: Add copyright notice.
+
+2014-01-29  Stefan Monnier  <monnier@iro.umontreal.ca>
+
+	Move metadata to autex.el; Remove auctex-pkg.el
+
 2013-10-11  Stefan Monnier  <monnier@iro.umontreal.ca>
 
 	Regenerate "dir" in English.
