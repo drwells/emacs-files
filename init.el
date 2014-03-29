@@ -141,6 +141,10 @@
 ;; Scheme stuff
 (setq scheme-program-name "guile")
 
+;; smex
+(smex-initialize)
+(global-set-key (kbd "M-x") 'smex)
+
 ;; stuff for aquamacs. Ensure that this is the last line so that all
 ;; the variables are reset correctly. Otherwise do stuff for GNU/Linux.
 (if (eq system-type 'darwin)
