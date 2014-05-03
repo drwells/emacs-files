@@ -55,6 +55,12 @@
 ;; ansi-term stuff
 (setq explicit-shell-file-name "/bin/zsh")
 
+;; see
+;; http://stackoverflow.com/questions/6820051/unicode-characters-in-emacs-term-mode
+(defadvice ansi-term (after advise-ansi-term-coding-system)
+    (set-buffer-process-coding-system 'utf-8-unix 'utf-8-unix))
+(ad-activate 'ansi-term)
+
 ;; C stuff
 (add-hook 'c-mode-common-hook (lambda () (load "~/.emacs.d/cmaster.el")))
 
