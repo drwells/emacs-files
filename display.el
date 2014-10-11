@@ -5,7 +5,7 @@
 ;; taken from http://www.emacswiki.org/LineNumbers
 (setq linum-disabled-modes
       '(eshell-mode term-mode magit-mode compilation-mode comint-mode
-                    inferior-scheme-mode))
+                    inferior-scheme-mode geiser-repl-mode))
 (defun linum-on ()
   (unless (or (minibufferp) (member major-mode linum-disabled-modes))
     (linum-mode 1)))
