@@ -11,6 +11,11 @@
     (set-default-font (concat "-apple-bitstream vera sans mono-medium-r-normal-"
                               "-12-120-72-72-m-120-iso10646-1"))))
 
+;; font configuration: GNU/Linux handles this better than the mac for some reason.
+(ignore-errors (progn
+                 (require 'unicode-fonts)
+                 (unicode-fonts-setup)))
+
 (setq haskell-program-name "/sw/bin/ghci")
 (setq-default inferior-lisp-program "/sw/bin/sbcl")
 (setq python-python-command "/Users/drwells/Applications/python")
