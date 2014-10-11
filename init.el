@@ -126,6 +126,9 @@
                               (progn
                                 (load-file "~/.emacs.d/matlabmaster.el")
                                 nil)))
+;; nimrod stuff
+(autoload 'nimrod-mode "nimrod-mode" "Major mode for editing Nimrod code." t)
+(add-to-list 'auto-mode-alist '("/*.\\.nim$" . nimrod-mode))
 
 ;; org-mode stuff
 (add-hook 'org-mode-hook
@@ -141,15 +144,19 @@
 (add-to-list 'auto-mode-alist '("/*.\.pxi" . python-mode))
 (add-to-list 'auto-mode-alist '("/*.\.pxd" . python-mode))
 (add-hook 'python-mode-hook
-          (lambda ()
-              (load-file "~/.emacs.d/pythonmaster.el")))
+          (lambda () (load-file "~/.emacs.d/pythonmaster.el")))
 
 ;; Scheme stuff
-(setq scheme-program-name "guile")
+(setq scheme-program-name "guile --fresh-auto-compile --no-debug")
+(add-hook 'cmuscheme-load-hook
+          (lambda () (load-file "~/.emacs.d/schememaster.el")))
 
 ;; smex
 (smex-initialize)
 (global-set-key (kbd "M-x") 'smex)
+
+;; tramp
+(setq tramp-default-method "ssh")
 
 ;; stuff for aquamacs. Ensure that this is the last line so that all
 ;; the variables are reset correctly. Otherwise do stuff for GNU/Linux.
