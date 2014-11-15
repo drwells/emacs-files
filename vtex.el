@@ -36,7 +36,7 @@
     (if (eq paren 'word-right)
         (setq regex (concat (regexp-opt string-list) "\\>"))
       (setq regex (regexp-opt string-list paren)))
-    (list `(,regex . ,font-lock-input))))
+    (list (cons regex font-lock-input))))
 
 (defconst vtex-font-lock-sectioning
   (list
@@ -55,12 +55,11 @@
   "Math delimiters.")
 
 (defconst vtex-font-lock-catch-backslash
-  (list '("\\(\\\\\\w+\\)" . font-lock-builtin-face))
+  (list '("\\\\\\w+\\>" . font-lock-builtin-face))
   "catch additional backslashed terms.")
 
 (defconst vtex-font-lock-catch-backslash-special
-  (vtex--font-lock-opt '("\\&" "\\%" "\\$" "\\#" "\\\\")
-                       font-lock-negation-char-face)
+  (vtex--font-lock-opt '("\\&" "\\%" "\\#" "\\\\") font-lock-negation-char-face)
   "Catch special backslashed terms.")
 
 (defconst vtex-font-lock-math-align
@@ -84,17 +83,16 @@
 
 (defvar vtex-font-lock-keywords
   (append vtex-font-lock-sectioning
-          vtex-font-lock-catch-backslash-special
           vtex-font-lock-math-delimiters
           vtex-font-lock-math-align
           vtex-font-lock-misc-keywords
           vtex-font-lock-spacing-commands
-          vtex-font-lock-catch-backslash)
+          vtex-font-lock-catch-backslash
+          vtex-font-lock-catch-backslash-special)
   "Default highlighting expressions for VTEX mode.")
 
 (defvar vtex-syntax-table
   (let ((vtex-mode-syntax-table (make-syntax-table)))
-    (modify-syntax-entry ?: "w" vtex-mode-syntax-table)
     (modify-syntax-entry ?% "< b" vtex-mode-syntax-table)
     (modify-syntax-entry ?\n "> b" vtex-mode-syntax-table)
     vtex-mode-syntax-table)
@@ -273,14 +271,20 @@ paragraph terminator, then return nil."
       (cond
        ((looking-at vtex-block-terminator-regexp) nil)
        ((eq direction 'up)
-        (progn
-          (search-backward-regexp vtex-block-terminator-regexp)
-          (forward-line 1)
-          (line-beginning-position)))
+        ;; if the search fails then the block must start at (point-min). The
+        ;; same concept holds for the forwards search (block must end at
+        ;; (point-max)).
+        (if (eq (search-backward-regexp vtex-block-terminator-regexp nil t) nil)
+            (point-min)
+          (progn
+            (forward-line 1)
+            (line-beginning-position))))
        ((eq direction 'down)
-        (progn (search-forward-regexp vtex-block-terminator-regexp)
-               (forward-line -1)
-               (line-end-position)))
+        (if (eq (search-forward-regexp vtex-block-terminator-regexp nil t) nil)
+            (point-max)
+          (progn
+            (forward-line -1)
+            (line-end-position))))
        (t (error (concat "unrecognized direction;"
                          "should be `up' or `down'")))))))
 
@@ -297,7 +301,7 @@ paragraph terminator, then return nil."
         (narrow-to-region first-char last-char)
         (fill-individual-paragraphs (point-min) (point-max))))))
 
-;; misc. functions
+;; text insertion functions
 (defun vtex-insert-backquote ()
   "Insert ``|'' at point, and move the cursor to |."
   (interactive)
@@ -306,14 +310,42 @@ paragraph terminator, then return nil."
     (insert "''")
     (goto-char (- (point) 2))))
 
+(defun vtex--insert-scaled-delimiters (left-delimiter right-delimiter)
+  "Template function for inserting \\left(|\\right) at point and moving the
+cursor to |. ( and ) are function arguments."
+  (progn
+    (insert "\\left")
+    (insert left-delimiter)
+    (insert "\\right")
+    (insert right-delimiter)
+    (goto-char (- (point) (length (concat "\\right" right-delimiter))))))
+
+(defun vtex-insert-leftright-parentheses ()
+  "Insert \\left(|\\right) at point, and move the cursor to |."
+  (interactive)
+  (vtex--insert-scaled-delimiters ("(" ")")))
+
+(defun vtex-insert-leftright-square-brackets ()
+  "Insert \\left[|\\right] at point, and move the cursor to |."
+  (interactive)
+  (vtex--insert-scaled-delimiters ("[" "]")))
+
+(defun vtex-insert-leftright-curly-brackets ()
+  "Insert \\left{|\\right} at point, and move the cursor to |."
+  (interactive)
+  (vtex--insert-scaled-delimiters ("{" "}")))
+
 ;; mode configuration
 (defvar vtex-mode-hook nil)
 
 (defvar vtex-mode-map
   (let ((vtm (make-keymap)))
     (define-key vtm "`" 'vtex-insert-backquote)
-    (define-key vtm "\M-q" 'vtex-fill-paragraph)
+    (define-key vtm (kbd "M-q") 'vtex-fill-paragraph)
     (define-key vtm "\C-j" 'newline-and-indent)
+;    (define-key vtm (kbd "C-(") 'vtex-insert-leftright-parentheses)
+;    (define-key vtm "\C-[" 'vtex-insert-leftright-square-brackets)
+;    (define-key vtm "\C-{" 'vtex-insert-leftright-curly-brackets)
     vtm)
   "Keymap for VTEX major mode")
 
@@ -321,6 +353,9 @@ paragraph terminator, then return nil."
   "Major mode for editing LaTeX files."
   :syntax-table vtex-syntax-table
   (progn
+    ;; turn off french spacing.
+    (make-local-variable 'sentence-end-double-space)
+    (setq sentence-end-double-space nil)
     (setq font-lock-defaults vtex-font-lock-keywords)
     (setq comment-start "%")
     (setq comment-end "")
