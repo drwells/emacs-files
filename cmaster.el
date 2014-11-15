@@ -1,8 +1,12 @@
-;; set up linux style and then switch to indentation of 8.
-(setq c-default-style "linux" c-basic-offset 8)
+(setq c-default-style
+      '((c-mode . "linux")
+        (c++-mode . "gnu")))
+(setq c-basic-offset 8)
 
 ; fix behavior of > and < in normal state.
 (set (make-local-variable 'evil-shift-width) 8)
+
+(add-hook 'c++-mode-hook (lambda () (setq c-basic-offset 2)))
 
 (defun add-order-macro (start end)
   "Convert some pair 1, 2 to ORDER(1, 2, entriesPerRow, entriesPerCol)"

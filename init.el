@@ -6,8 +6,10 @@
 ;;----------------------------------------------------------------------------
 
 (require 'package)
+;(add-to-list 'package-archives
+;             '("marmalade" . "http://marmalade-repo.org/packages/"))
 (add-to-list 'package-archives
-             '("marmalade" . "http://marmalade-repo.org/packages/"))
+  '("melpa" . "http://melpa.org/packages/") t)
 (package-initialize)
 
 (setq default-directory "~/")

@@ -16,7 +16,6 @@
 (defun cycle-selected-buffer () 'cycle-selected-buffer)
 (define-key evil-normal-state-map "tn" 'other-window)
 
-; yasnippet currently having trouble on the beta copy of aquamacs24.
 (with-demoted-errors
   (progn
     (require 'yasnippet)
@@ -24,6 +23,12 @@
     (yas-load-directory
      "~/.emacs.d/plugins/yasnippet-snippets/snippets/text-mode")
     (setq yas-indent-line 'auto)))
+
+(add-hook 'term-mode-hook (lambda () (setq yas-dont-activate t)))
+
+(setq yas-snippet-dirs
+      (cons "~/.emacs.d/plugins/yasnippet-snippets/snippets/text-mode"
+            yas-snippet-dirs))
 
 (require 'smartparens)
 (smartparens-global-mode t)

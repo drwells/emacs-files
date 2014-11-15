@@ -1,2 +1,3 @@
-alias nil  $*
+alias Warning: /bin/zsh $*
 alias git git --no-pager $*
+alias nil $*
