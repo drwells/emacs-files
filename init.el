@@ -63,6 +63,8 @@
     (set-buffer-process-coding-system 'utf-8-unix 'utf-8-unix))
 (ad-activate 'ansi-term)
 
+(setq term-buffer-maximum-size 8192)
+
 ;; C stuff
 (add-hook 'c-mode-common-hook (lambda () (load "~/.emacs.d/cmaster.el")))
 
@@ -96,6 +98,11 @@
 (setq ido-enable-flex-matching t)
 (setq ido-file-extensions-order '(".c" ".org" ".el"))
 (global-set-key (kbd "C-x C-b") 'ido-switch-buffer)
+;; don't switch frames when I want to view the same buffer in two places; see
+;; http://stackoverflow.com/questions/3217247/
+;; for more information.
+(setq ido-default-buffer-method 'selected-window)
+
 
 ;; LaTeX stuff
 (require 'vtex-mode "~/.emacs.d/vtex.el" nil)
@@ -165,3 +172,4 @@
 (if (eq system-type 'darwin)
     (load "~/.emacs.d/aquamacs.el")
   (setq-default ispell-program-name "aspell"))
+(put 'narrow-to-region 'disabled nil)

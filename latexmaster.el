@@ -34,6 +34,9 @@
         '(("[" . "\\left[")     . ("]" . "\\right]"))
         '(("\\{" . "\\left\\{") . ("\\}" . "\\right\\}"))))
 
+;; sometimes yasnippet doesn't start for VTeX and I don't know why.
+(yas-minor-mode 1)
+
 (defun toggle-left-right-ify-region (start end)
   "Toggle all the '\\left('s to '('s, or ')'s to '\\right)'s."
   ; see if we can find a \\left in the region.

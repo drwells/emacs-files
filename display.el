@@ -44,6 +44,7 @@
 ;; colors for magit
 (add-hook 'magit-mode-hook
           (lambda ()
+            (set-face-background 'magit-diff-hunk-header "grey26")
             (set-face-background 'magit-item-highlight "grey20")))
 
 ;; modify the syntax highlighting if in gui mode
