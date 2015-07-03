@@ -1,4 +1,5 @@
 (global-set-key (kbd "RET") 'newline-and-indent)
+(setq require-final-newline t)
 
 ;; settings for evil
 (require 'undo-tree)

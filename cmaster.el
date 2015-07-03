@@ -3,6 +3,11 @@
         (c++-mode . "gnu")))
 (setq c-basic-offset 8)
 
+;; only enable flyspell in comments
+(add-hook 'c++-mode-hook
+          (lambda ()
+            (flyspell-prog-mode)))
+
 ; fix behavior of > and < in normal state.
 (set (make-local-variable 'evil-shift-width) 8)
 
@@ -49,3 +54,20 @@
            ("\\<\\(xstring\\|xchar\\)\\>" . font-lock-type-face)
            ))
         ) t)
+
+;; stuff for irony mode
+(add-hook 'c++-mode-hook 'irony-mode)
+(add-hook 'c++-mode-hook 'company-mode)
+(eval-after-load 'company '(add-to-list 'company-backends 'company-irony))
+(eval-after-load 'company '(setq company-idle-delay 0.1))
+
+(defun --irony-mode-hook ()
+  (define-key irony-mode-map [remap completion-at-point]
+    'irony-completion-at-point-async)
+  (define-key irony-mode-map [remap complete-symbol]
+    'irony-completion-at-point-async))
+(add-hook 'irony-mode-hook '--irony-mode-hook)
+(add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+
+;; stuff for company-irony mode
+(add-hook 'irony-mode-hook 'company-irony-setup-begin-commands)
