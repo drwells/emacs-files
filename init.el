@@ -67,6 +67,11 @@
 
 ;; C stuff
 (add-hook 'c-mode-common-hook (lambda () (load "~/.emacs.d/cmaster.el")))
+(add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
+
+;; CMake
+(autoload 'cmake-font-lock-activate "cmake-font-lock" nil t)
+(add-hook 'cmake-mode-hook 'cmake-font-lock-activate)
 
 ;; comint-mode stuff
 (add-hook 'comint-output-filter-functions
@@ -123,6 +128,8 @@
      (set-face-foreground 'magit-diff-del "firebrick3")
      (when (not window-system)
        (set-face-background 'magit-item-highlight "black"))))
+(setq magit-auto-revert-mode nil)
+(setq magit-last-seen-setup-instructions "1.4.0")
 
 ;; markdown stuff
 (add-to-list 'auto-mode-alist '("/*.\.md$" . markdown-mode))
@@ -173,3 +180,13 @@
     (load "~/.emacs.d/aquamacs.el")
   (setq-default ispell-program-name "aspell"))
 (put 'narrow-to-region 'disabled nil)
+
+;; custom-set-variables; this part is automatically generated.
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(safe-local-variable-values
+   (quote
+    ((company-clang-arguments "-I/home/drwells/Applications/dealii-dev/include/")))))
