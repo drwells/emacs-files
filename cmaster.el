@@ -4,14 +4,17 @@
 (setq c-basic-offset 8)
 
 ;; only enable flyspell in comments
+;; turn on snippets
 (add-hook 'c++-mode-hook
           (lambda ()
-            (flyspell-prog-mode)))
+            (flyspell-prog-mode)
+            (yas-minor-mode)))
 
 ; fix behavior of > and < in normal state.
 (set (make-local-variable 'evil-shift-width) 8)
 
 (add-hook 'c++-mode-hook (lambda () (setq c-basic-offset 2)))
+(add-hook 'c++-mode-hook (lambda () (setq fill-column 78)))
 
 (defun add-order-macro (start end)
   "Convert some pair 1, 2 to ORDER(1, 2, entriesPerRow, entriesPerCol)"
