@@ -54,7 +54,7 @@
   "Spell check the whole buffer with fontification"
   (interactive)
   (let ((previous-chunk-size jit-lock-chunk-size))
-    (progn
+    (save-excursion
       (setq jit-lock-chunk-size (point-max))
       (font-lock-default-fontify-region (point-min) (point-max) nil)
       (flyspell-buffer)
