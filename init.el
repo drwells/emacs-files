@@ -84,8 +84,7 @@
 ;; dired stuff
 (require 'dired-x)
 (setq-default dired-omit-files-p t)
-(setq dired-omit-files
-      (concat dired-omit-files "\\|" "\\.pyc$"))
+(setq dired-omit-files (concat dired-omit-files "\\|" "\\.pyc$"))
 
 ;; eshell stuff
 (add-hook 'eshell-mode-hook (lambda () (smartparens-mode t)))
