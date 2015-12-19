@@ -3,12 +3,12 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "cmake-mode" "cmake-mode.el" (21894 48913 300089
-;;;;;;  988000))
+;;;### (autoloads nil "cmake-mode" "cmake-mode.el" (22133 39363 413692
+;;;;;;  101000))
 ;;; Generated autoloads from cmake-mode.el
 
 (autoload 'cmake-mode "cmake-mode" "\
-Major mode for editing CMake listfiles.
+Major mode for editing CMake source files.
 
 \(fn)" t nil)
 

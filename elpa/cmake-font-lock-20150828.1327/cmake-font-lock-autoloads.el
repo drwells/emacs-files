@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (or (file-name-directory #$) (car load-path)))
 
-;;;### (autoloads nil "cmake-font-lock" "cmake-font-lock.el" (21894
-;;;;;;  48916 523423 438000))
+;;;### (autoloads nil "cmake-font-lock" "cmake-font-lock.el" (22133
+;;;;;;  39363 520358 771000))
 ;;; Generated autoloads from cmake-font-lock.el
 
 (autoload 'cmake-font-lock-activate "cmake-font-lock" "\
