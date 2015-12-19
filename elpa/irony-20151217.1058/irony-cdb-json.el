@@ -64,11 +64,14 @@ directories to project directory."
        (list proot (read-file-name "Compile commands:" proot nil t
                                    "compile_commands.json")))))
   (add-to-list 'irony-cdb-json--project-alist
-               (cons project-root compile-commands-path))
-  (irony-cdb-json--save-project-alist))
+               (cons (expand-file-name project-root)
+                     (expand-file-name compile-commands-path)))
+  (irony-cdb-json--save-project-alist)
+
+  ; and tell irony to load it now
+  (irony-cdb-autosetup-compile-options))
 
 (defun irony-cdb-json--get-compile-options ()
-  (irony-cdb-json--ensure-project-alist-loaded)
   (irony--awhen (irony-cdb-json--locate-db)
     (let ((db (irony-cdb-json--load-db it)))
       (irony--aif (irony-cdb-json--exact-flags db)
@@ -111,9 +114,12 @@ directories to project directory."
            finally return found))
 
 (defun irony-cdb-json--locate-db ()
-  (irony--aif (locate-dominating-file (irony-cdb-json--target-path)
-                                      "compile_commands.json")
-      (expand-file-name "compile_commands.json" it)
+  (irony-cdb-json--ensure-project-alist-loaded)
+  (irony--aif (irony-cdb--locate-dominating-file-with-dirs
+               (irony-cdb-json--target-path)
+               "compile_commands.json"
+               irony-cdb-search-directory-list)
+      (expand-file-name it)
     ;; if not in a parent directory, look in the project alist
     (irony--awhen (irony-cdb-json--find-best-prefix-path
                    (irony-cdb-json--target-path)

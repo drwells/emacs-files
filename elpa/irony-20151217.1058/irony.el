@@ -116,7 +116,7 @@ The slash is expected at the end."
 
 ;;;###autoload
 (defcustom irony-additional-clang-options nil
-  "Additionnal command line options to pass down to libclang.
+  "Additional command line options to pass down to libclang.
 
 Please, do NOT use this variable to add header search paths, only
 additional warnings or compiler options.
@@ -199,17 +199,6 @@ buffer file.")
 
 (defconst irony--eot "\n;;EOT\n"
   "String sent by the server to signal the end of a response.")
-
-(defvar irony--server-install-command-history nil)
-
-(defvar-local irony--initial-compile-check-status nil
-  "Non-nil when an initial compile check as already been requested.
-
-Possible values are:
-- nil
-- 'requested, when the compile check for the current buffer has
-  been requested.
-- 'done, when the compile check has been received and processed")
 
 
 ;;
@@ -469,6 +458,7 @@ Note: WORK-DIR is not used when the compile option
 ;; Irony-Server setup
 ;;
 
+(defvar irony--server-install-command-history nil)
 (defun irony--install-server-read-command (command)
   (read-shell-command
    "Install command: " command
@@ -493,19 +483,20 @@ The installation requires CMake and the libclang developpement package."
                  (shell-quote-argument irony-cmake-executable))))
            (irony--install-server-read-command command))))
   (let ((build-dir (or irony-server-build-dir
-                       (format "%s/build-irony-server-%s"
-                               temporary-file-directory
-                               (irony-version)))))
-  (make-directory build-dir t)
-  (let ((default-directory build-dir))
-    ;; we need to kill the process to be able to install a new one,
-    ;; at least on Windows
-    (irony-server-kill)
-    (with-current-buffer (compilation-start command nil
-                                            #'(lambda (maj-mode)
-                                                "*irony-server build*"))
-      (setq-local compilation-finish-functions
-                  '(irony--server-install-finish-function))))))
+                       (concat 
+                        (file-name-as-directory temporary-file-directory)
+                        (file-name-as-directory (format "build-irony-server-%s"
+                                                        (irony-version)))))))
+    (make-directory build-dir t)
+    (let ((default-directory build-dir))
+      ;; we need to kill the process to be able to install a new one,
+      ;; at least on Windows
+      (irony-server-kill)
+      (with-current-buffer (compilation-start command nil
+                                              #'(lambda (maj-mode)
+                                                  "*irony-server build*"))
+        (setq-local compilation-finish-functions
+                    '(irony--server-install-finish-function))))))
 
 (defun irony--server-install-finish-function (buffer msg)
   (if (string= "finished\n" msg)
@@ -561,13 +552,14 @@ list (and undo information is not kept).")
           (process-adaptive-read-buffering nil)
           process)
       (setq process
-            (start-process "Irony" irony--server-buffer
-                           irony--server-executable
-                           "-i"
-                           "--log-file"
-                           (expand-file-name
-                            (format-time-string "irony.%Y-%m-%d_%Hh-%Mm-%Ss.log")
-                            temporary-file-directory)))
+            (start-process-shell-command
+             "Irony"                    ;process name
+             irony--server-buffer       ;buffer
+             (format "%s -i 2> %s"      ;command
+                     (shell-quote-argument irony--server-executable)
+                     (expand-file-name
+                      (format-time-string "irony.%Y-%m-%d_%Hh-%Mm-%Ss.log")
+                      temporary-file-directory))))
       (buffer-disable-undo irony--server-buffer)
       (set-process-query-on-exit-flag process nil)
       (set-process-sentinel process 'irony--server-process-sentinel)
@@ -596,7 +588,8 @@ list (and undo information is not kept).")
 (defun irony--process-server-response (process response)
   (let ((sexp (read response))
         (callback (irony--server-process-pop-callback process)))
-    (apply (car callback) sexp (cdr callback))))
+    (with-demoted-errors "Warning: %S"
+      (apply (car callback) sexp (cdr callback)))))
 
 (defun irony--server-process-filter (process output)
   "Handle output that come from an irony-server process."
@@ -633,9 +626,6 @@ list (and undo information is not kept).")
     (process-put p 'irony-callback-stack (cdr callbacks))
     (car callbacks)))
 
-(defun irony--server-process-callback-count (p)
-  (length (process-get p 'irony-callback-stack)))
-
 
 ;;
 ;; Server commands
@@ -661,6 +651,25 @@ If no such file exists on the filesystem the special file '-' is
                              (format "%s\n"
                                      (combine-and-quote-strings argv)))))))
 
+(defvar irony--sync-id 0 "ID of next sync request.")
+(defvar irony--sync-result '(-1 . nil)
+  "The car stores the id of the result and the cdr stores the return value.")
+
+(defun irony--sync-request-callback (response id)
+  (setq irony--sync-result (cons id response)))
+
+(defun irony--send-request-sync (request &rest args)
+  "Send a request to irony-server and wait for the result."
+  (let* ((id irony--sync-id)
+         (callback (list #'irony--sync-request-callback id)))
+    (setq irony--sync-id (1+ irony--sync-id))
+    (with-local-quit
+      (let ((process (irony--get-server-process-create)))
+        (apply 'irony--send-request request callback args)
+        (while (not (= id (car irony--sync-result)))
+          (accept-process-output process))
+        (cdr irony--sync-result)))))
+
 (defun irony--send-parse-request (request callback &rest args)
   "Send a request that acts on the current buffer to irony-server.
 
@@ -677,17 +686,23 @@ care of."
       (irony--server-process-push-callback process callback)
       ;; skip narrowing to compute buffer size and content
       (irony--without-narrowing
-        (process-send-string process
-                             (format "%s\n%s\n%s\n%d\n"
-                                     (combine-and-quote-strings argv)
-                                     (combine-and-quote-strings compile-options)
-                                     buffer-file-name
-                                     (irony--buffer-size-in-bytes)))
-        (process-send-region process (point-min) (point-max))
         ;; always make sure to finish with a newline (required by irony-server
         ;; to play nice with line buffering even when the file doesn't end with
         ;; a newline)
-        (process-send-string process "\n")))))
+        ;;
+        ;; it is important to send the request atomically rather than using
+        ;; multiple process-send calls. On Windows at least, if the request is
+        ;; not atomic, content from subsequent requests can get intermixed with
+        ;; earlier requests. This may be because of how Emacs behaves when the
+        ;; buffers to communicate with processes are full (see
+        ;; http://www.gnu.org/software/emacs/manual/html_node/elisp/Input-to-Processes.html).
+        (process-send-string process
+                             (format "%s\n%s\n%s\n%d\n%s\n"
+                                     (combine-and-quote-strings argv)
+                                     (combine-and-quote-strings compile-options)
+                                     buffer-file-name
+                                     (irony--buffer-size-in-bytes)
+                                     (buffer-substring (point-min) (point-max))))))))
 
 
 ;;
@@ -751,7 +766,7 @@ symbol:
 - success: parsing the file was a sucess, irony-server has
   up-to-date information about the buffer
 
-- failed:- parsing the file resulted in a failure (file access
+- failed: parsing the file resulted in a failure (file access
   rights wrong, whatever)
 
 - cancelled: if the request for this callback was superseded by
