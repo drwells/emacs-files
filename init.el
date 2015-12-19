@@ -84,6 +84,9 @@
 (autoload 'd-mode "d-mode" "Major mode for editing D code." t)
 (add-to-list 'auto-mode-alist '("/*.\.d$" . d-mode))
 
+;; desktop mode (reopen buffers when restarting emacs)
+(desktop-save-mode 1)
+
 ;; dired stuff
 (require 'dired-x)
 (setq-default dired-omit-files-p t)
