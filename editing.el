@@ -43,7 +43,7 @@
 
 ;; start server mode (mainly so that I can edit files from the shell without
 ;; using vim inside emacs)
-(start-server)
+(server-start)
 
 ;; Unfortunately, flyspell-prog-mode will only check the portion of the buffer
 ;; that it knows are comments or strings, which is limited to the surrounding
