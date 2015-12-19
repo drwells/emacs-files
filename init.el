@@ -124,8 +124,6 @@
 ;; magit stuff
 (eval-after-load 'magit
   '(progn
-     (set-face-foreground 'magit-diff-add "green4")
-     (set-face-foreground 'magit-diff-del "firebrick3")
      (when (not window-system)
        (set-face-background 'magit-item-highlight "black"))))
 (setq magit-auto-revert-mode nil)

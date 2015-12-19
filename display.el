@@ -40,13 +40,6 @@
 (set-face-foreground 'minibuffer-prompt "thistle1")
 (set-face-foreground 'font-lock-negation-char-face "red")
 
-
-;; colors for magit
-(add-hook 'magit-mode-hook
-          (lambda ()
-            (set-face-background 'magit-diff-hunk-header "grey26")
-            (set-face-background 'magit-item-highlight "grey20")))
-
 ;; modify the syntax highlighting if in gui mode
 (add-hook 'prog-mode-hook
           (lambda ()
