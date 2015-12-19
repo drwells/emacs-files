@@ -62,12 +62,15 @@
 (defadvice ansi-term (after advise-ansi-term-coding-system)
     (set-buffer-process-coding-system 'utf-8-unix 'utf-8-unix))
 (ad-activate 'ansi-term)
-
 (setq term-buffer-maximum-size 8192)
 
 ;; C stuff
-(add-hook 'c-mode-common-hook (lambda () (load "~/.emacs.d/cmaster.el")))
+(load-file "~/.emacs.d/cmaster.el")
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
+
+;; company mode
+(eval-after-load 'company '(add-to-list 'company-backends 'company-irony))
+(eval-after-load 'company '(setq company-idle-delay 0.1))
 
 ;; CMake
 (autoload 'cmake-font-lock-activate "cmake-font-lock" nil t)
