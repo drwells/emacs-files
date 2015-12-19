@@ -11,7 +11,9 @@
             (yas-minor-mode)))
 
 ; fix behavior of > and < in normal state.
-(set (make-local-variable 'evil-shift-width) 8)
+(add-hook 'c++-mode-hook
+          (lambda ()
+            (set (make-local-variable 'evil-shift-width) 8)))
 
 (add-hook 'c++-mode-hook (lambda () (setq c-basic-offset 2)))
 (add-hook 'c++-mode-hook (lambda () (setq fill-column 78)))
@@ -35,12 +37,15 @@
   (eval `(defvar ,new-face nil))
   (set new-face new-face))
 
-; labels, case, public, private, proteced, namespace-tags
-(--copy-face 'font-lock-label-face 'font-lock-keyword-face)
-; comment markups such as Javadoc-tags
-(--copy-face 'font-lock-doc-markup-face 'font-lock-doc-face)
-; comment markups
-(--copy-face 'font-lock-doc-string-face 'font-lock-comment-face)
+(add-hook 'c++-mode-hook
+          (lambda ()
+            (progn
+              ;; labels, case, public, private, proteced, namespace-tags
+              (--copy-face 'font-lock-label-face 'font-lock-keyword-face)
+              ;; comment markups such as Javadoc-tags
+              (--copy-face 'font-lock-doc-markup-face 'font-lock-doc-face)
+              ;; comment markups
+              (--copy-face 'font-lock-doc-string-face 'font-lock-comment-face))))
 
 (add-hook 'c++-mode-hook
       '(lambda()
