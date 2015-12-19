@@ -5,7 +5,7 @@
 ;; Author: Nikolaj Schumacher <bugs * nschum de>
 ;; Maintainer: Tassilo Horn <tsdh@gnu.org>
 ;; Version: 1.1.0
-;; Package-Version: 20150421.2328
+;; Package-Version: 20151107.2316
 ;; Keywords: faces, matching
 ;; URL: https://github.com/tsdh/highlight-parentheses.el
 ;;      http://nschum.de/src/emacs/highlight-parentheses/ (old website)
@@ -125,7 +125,11 @@ overlays when scrolling or moving point by pressing and holding
   (kill-local-variable 'hl-paren-overlays)
   (kill-local-variable 'hl-paren-last-point)
   (remove-hook 'post-command-hook 'hl-paren-initiate-highlight t)
-  (when highlight-parentheses-mode
+  (when (and highlight-parentheses-mode
+             ;; Don't enable in *Messages* buffer.
+             ;; https://github.com/tsdh/highlight-parentheses.el/issues/14
+             (not (eq major-mode 'messages-buffer-mode))
+             (not (string= (buffer-name) "*Messages*")))
     (hl-paren-create-overlays)
     (add-hook 'post-command-hook 'hl-paren-initiate-highlight nil t)))
 
