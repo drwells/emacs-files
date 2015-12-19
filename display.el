@@ -32,9 +32,11 @@
     (set-face-attribute 'default nil
                         :family "Monospace" :height 110))
 (custom-set-faces
+ '(match ((t (:background "midnight blue"))))
  '(term-color-blue ((t (:foreground "DodgerBlue1"))))
  '(mode-line ((t (:background "dim gray" :foreground "black" :box
                               (:line-width -1 :style released-button))))))
+
 (setq font-lock)
 (set-face-background 'highlight "grey20") ;; override nasty green color
 (set-face-foreground 'minibuffer-prompt "thistle1")
