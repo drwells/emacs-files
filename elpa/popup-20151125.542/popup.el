@@ -4,9 +4,9 @@
 
 ;; Author: Tomohiro Matsuyama <m2ym.pub@gmail.com>
 ;; Keywords: lisp
-;; Package-Version: 20150609.2145
+;; Package-Version: 20151125.542
 ;; Version: 0.5.3
-;; Package-Requires: ((cl-lib "0.3"))
+;; Package-Requires: ((cl-lib "0.5"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -379,16 +379,15 @@ usual."
       (put-text-property start (length content) 'face face content))
     (when mouse-face
       (put-text-property 0 (length content) 'mouse-face mouse-face content))
-    (unless (overlay-get overlay 'dangle)
-      (overlay-put overlay 'display (concat prefix (substring content 0 1)))
-      (setq prefix nil
-            content (concat (substring content 1))))
-    (overlay-put overlay
-                 'after-string
-                 (concat prefix
-                         content
-                         scroll-bar-char
-                         postfix))))
+    (let ((prop (if (overlay-get overlay 'dangle)
+                    'after-string
+                  'display)))
+      (overlay-put overlay
+                   prop
+                   (concat prefix
+                           content
+                           scroll-bar-char
+                           postfix)))))
 
 (cl-defun popup-create-line-string (popup
                                     string
@@ -889,13 +888,19 @@ Pages up through POPUP."
 (defvar popup-menu-show-quick-help-function 'popup-menu-show-quick-help
   "Function used for showing quick help by `popup-menu*'.")
 
+(defcustom popup-isearch-regexp-builder-function #'regexp-quote
+  "Function used to construct a regexp from a pattern. You may for instance
+  provide a function that replaces spaces by '.+' if you like helm or ivy style
+  of completion."
+  :type 'function)
+
 (defsubst popup-isearch-char-p (char)
   (and (integerp char)
        (<= 32 char)
        (<= char 126)))
 
 (defun popup-isearch-filter-list (pattern list)
-  (cl-loop with regexp = (regexp-quote pattern)
+  (cl-loop with regexp = (funcall popup-isearch-regexp-builder-function pattern)
            for item in list
            do
            (unless (stringp item)
