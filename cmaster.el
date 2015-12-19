@@ -66,8 +66,6 @@
 ;; stuff for irony mode
 (add-hook 'c++-mode-hook 'irony-mode)
 (add-hook 'c++-mode-hook 'company-mode)
-(eval-after-load 'company '(add-to-list 'company-backends 'company-irony))
-(eval-after-load 'company '(setq company-idle-delay 0.1))
 
 (defun --irony-mode-hook ()
   (define-key irony-mode-map [remap completion-at-point]
