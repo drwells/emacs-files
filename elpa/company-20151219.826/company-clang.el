@@ -1,4 +1,4 @@
-;;; company-clang.el --- company-mode completion back-end for Clang  -*- lexical-binding: t -*-
+;;; company-clang.el --- company-mode completion backend for Clang  -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2009, 2011, 2013-2015  Free Software Foundation, Inc.
 
@@ -30,7 +30,7 @@
 (require 'cl-lib)
 
 (defgroup company-clang nil
-  "Completion back-end for Clang."
+  "Completion backend for Clang."
   :group 'company)
 
 (defcustom company-clang-executable
@@ -203,11 +203,11 @@ or automatically through a custom `company-clang-prefix-guesser'."
         (buf (get-buffer-create "*clang-output*"))
         ;; Looks unnecessary in Emacs 25.1 and later.
         (process-adaptive-read-buffering nil))
-    (with-current-buffer buf
-      (erase-buffer)
-      (setq buffer-undo-list t))
     (if (get-buffer-process buf)
         (funcall callback nil)
+      (with-current-buffer buf
+        (erase-buffer)
+        (setq buffer-undo-list t))
       (let ((process (apply #'start-process "company-clang" buf
                             company-clang-executable args)))
         (set-process-sentinel
@@ -290,7 +290,7 @@ or automatically through a custom `company-clang-prefix-guesser'."
       0)))
 
 (defun company-clang (command &optional arg &rest ignored)
-  "`company-mode' completion back-end for Clang.
+  "`company-mode' completion backend for Clang.
 Clang is a parser for C and ObjC.  Clang version 1.1 or newer is required.
 
 Additional command line arguments can be specified in
