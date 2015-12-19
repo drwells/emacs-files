@@ -2,7 +2,7 @@
 ;; Author: Vegard Øye <vegard_oye at hotmail.com>
 ;; Maintainer: Vegard Øye <vegard_oye at hotmail.com>
 
-;; Version: 1.1.6
+;; Version: 1.2.7
 
 ;;
 ;; This file is NOT part of GNU Emacs.
@@ -76,6 +76,7 @@ of the line or the buffer; just return nil."
       (forward-char)
       ;; don't put the cursor on a newline
       (when (and evil-move-cursor-back
+                 (not evil-move-beyond-eol)
                  (not (evil-visual-state-p))
                  (not (evil-operator-state-p))
                  (eolp) (not (eobp)) (not (bolp)))
@@ -484,6 +485,10 @@ and jump to the corresponding one."
            (close (point-max))
            (open-pair (condition-case nil
                           (save-excursion
+                            ;; consider the character right before eol given that
+                            ;; point may be placed there, e.g. in visual state
+                            (when (and (eolp) (not (bolp)))
+                              (backward-char))
                             (setq open (1- (scan-lists (point) 1 -1)))
                             (when (< open (line-end-position))
                               (goto-char open)
@@ -492,6 +497,10 @@ and jump to the corresponding one."
                         (error nil)))
            (close-pair (condition-case nil
                            (save-excursion
+                             ;; consider the character right before eol given that
+                             ;; point may be placed there, e.g. in visual state
+                             (when (and (eolp) (not (bolp)))
+                               (backward-char))
                              (setq close (1- (scan-lists (point) 1 1)))
                              (when (< close (line-end-position))
                                (goto-char (1+ close))
@@ -857,7 +866,7 @@ The default is half the screen."
       (scroll-down nil))))
 
 (evil-define-command evil-scroll-page-down (count)
-  "Scrolls the window COUNT pages upwards."
+  "Scrolls the window COUNT pages downwards."
   :repeat nil
   :keep-visual t
   (interactive "p")
@@ -1056,7 +1065,7 @@ or line COUNT to the top of the window."
 (evil-define-text-object evil-a-paragraph (count &optional beg end type)
   "Select a paragraph."
   :type line
-  (evil-select-an-object 'evil-paragraph beg end type count))
+  (evil-select-an-object 'evil-paragraph beg end type count t))
 
 (evil-define-text-object evil-inner-paragraph (count &optional beg end type)
   "Select inner paragraph."
@@ -1154,12 +1163,16 @@ or line COUNT to the top of the window."
       (unless (eobp) (forward-char))
       (evil-ex-search-previous 1)
       (when (and (<= evil-ex-search-match-beg pnt)
-                 (> evil-ex-search-match-end pnt))
+                 (> evil-ex-search-match-end pnt)
+                 (not (evil-visual-state-p)))
         (setq count (1- count)))
       (if (> count 0) (evil-ex-search-next count)))
      (t
       (unless (eobp) (forward-char))
       (evil-ex-search-next count))))
+  ;; active visual state if command is executed in normal state
+  (when (evil-normal-state-p)
+    (evil-visual-select evil-ex-search-match-beg evil-ex-search-match-end 'inclusive +1 t))
   (list evil-ex-search-match-beg evil-ex-search-match-end))
 
 (evil-define-text-object evil-previous-match (count &optional beg end type)
@@ -1425,6 +1438,7 @@ of the block."
       (goto-char end)
       (when (and evil-cross-lines
                  evil-move-cursor-back
+                 (not evil-move-beyond-eol)
                  (not (evil-visual-state-p))
                  (not (evil-operator-state-p))
                  (eolp) (not (eobp)) (not (bolp)))
@@ -1492,19 +1506,20 @@ but doesn't insert or remove any spaces."
     (goto-char beg)
     (indent-region beg end))
   ;; We also need to tabify or untabify the leading white characters
-  (let* ((beg-line (line-number-at-pos beg))
-         (end-line (line-number-at-pos end))
-         (ln beg-line)
-         (convert-white (if indent-tabs-mode 'tabify 'untabify)))
-    (save-excursion
-      (while (<= ln end-line)
-        (goto-char (point-min))
-        (forward-line (- ln 1))
-        (back-to-indentation)
-        ;; Whether tab or space should be used is determined by indent-tabs-mode
-        (funcall convert-white (line-beginning-position) (point))
-        (setq ln (1+ ln)))))
-  (back-to-indentation))
+  (when evil-indent-convert-tabs
+    (let* ((beg-line (line-number-at-pos beg))
+           (end-line (line-number-at-pos end))
+           (ln beg-line)
+           (convert-white (if indent-tabs-mode 'tabify 'untabify)))
+      (save-excursion
+        (while (<= ln end-line)
+          (goto-char (point-min))
+          (forward-line (- ln 1))
+          (back-to-indentation)
+          ;; Whether tab or space should be used is determined by indent-tabs-mode
+          (funcall convert-white (line-beginning-position) (point))
+          (setq ln (1+ ln)))))
+    (back-to-indentation)))
 
 (evil-define-operator evil-indent-line (beg end)
   "Indent the line."
@@ -1580,9 +1595,9 @@ the current line."
   (evil-shift-right (line-beginning-position) (line-beginning-position 2) count t))
 
 (evil-define-command evil-shift-left-line (count)
-  "Shift the current line COUNT times to the leeft.
+  "Shift the current line COUNT times to the left.
 The text is shifted to the nearest multiple of
-`evil-shift-width'. Like `evil-shift-leeft' but always works on
+`evil-shift-width'. Like `evil-shift-left' but always works on
 the current line."
   (interactive "<c>")
   (evil-shift-left (line-beginning-position) (line-beginning-position 2) count t))
@@ -1813,12 +1828,29 @@ The return value is the yanked text."
     ;; go to end of pasted text
     (forward-char)))
 
+(defun evil-paste-last-insertion ()
+  "Paste last insertion."
+  (interactive)
+  (evil-paste-from-register ?.))
+
 (evil-define-command evil-use-register (register)
   "Use REGISTER for the next command."
   :keep-visual t
   :repeat ignore
   (interactive "<C>")
   (setq evil-this-register register))
+
+(defvar evil-macro-buffer nil
+  "The buffer that has been active on macro recording.")
+
+(defun evil-abort-macro ()
+  "Abort macro recording when the buffer is changed.
+Macros are aborted when the the current buffer
+is changed during macro recording."
+  (unless (or (minibufferp) (eq (current-buffer) evil-macro-buffer))
+    (remove-hook 'post-command-hook #'evil-abort-macro)
+    (end-kbd-macro)
+    (message "Abort macro recording (changed buffer)")))
 
 (evil-define-command evil-record-macro (register)
   "Record a keyboard macro into REGISTER.
@@ -1830,7 +1862,11 @@ will be opened instead."
    (list (unless (and evil-this-macro defining-kbd-macro)
            (or evil-this-register (evil-read-key)))))
   (cond
+   ((eq register ?\C-g)
+    (keyboard-quit))
    ((and evil-this-macro defining-kbd-macro)
+    (remove-hook 'post-command-hook #'evil-abort-macro)
+    (setq evil-macro-buffer nil)
     (condition-case nil
         (end-kbd-macro)
       (error nil))
@@ -1845,11 +1881,16 @@ will be opened instead."
     (evil-command-window-search-forward))
    ((eq register ??)
     (evil-command-window-search-backward))
-   (t
+   ((or (and (>= register ?0) (<= register ?9))
+        (and (>= register ?a) (<= register ?z))
+        (and (>= register ?A) (<= register ?Z)))
     (when defining-kbd-macro (end-kbd-macro))
     (setq evil-this-macro register)
     (evil-set-register evil-this-macro nil)
-    (start-kbd-macro nil))))
+    (start-kbd-macro nil)
+    (setq evil-macro-buffer (current-buffer))
+    (add-hook 'post-command-hook #'evil-abort-macro))
+   (t (error "Invalid register"))))
 
 (evil-define-command evil-execute-macro (count macro)
   "Execute keyboard macro MACRO, COUNT times.
@@ -2379,7 +2420,7 @@ for `isearch-forward',\nwhich lists available keys:\n\n%s"
   (dotimes (var (or count 1))
     (evil-search-word t nil symbol)))
 
-(evil-define-motion evil-search-unbounded-word-backward (count &optiona symbol)
+(evil-define-motion evil-search-unbounded-word-backward (count &optional symbol)
   "Search backward for symbol under point.
 The search is unbounded, i.e., the pattern is not wrapped in
 \\<...\\>."
@@ -2390,7 +2431,7 @@ The search is unbounded, i.e., the pattern is not wrapped in
   (dotimes (var (or count 1))
     (evil-search-word nil t symbol)))
 
-(evil-define-motion evil-search-unbounded-word-forward (count &optiona symbol)
+(evil-define-motion evil-search-unbounded-word-forward (count &optional symbol)
   "Search forward for symbol under point.
 The search is unbounded, i.e., the pattern is not wrapped in
 \\<...\\>."
@@ -3508,20 +3549,21 @@ of the parent of the splitted window are rebalanced."
 (evil-define-command evil-window-bottom-right ()
   "Move the cursor to bottom-right window."
   :repeat nil
-  (select-window
-   (let ((last-sibling (frame-root-window)))
-     (while (not (window-live-p last-sibling))
-       (setq last-sibling (window-last-child last-sibling)))
-     last-sibling)))
+  (let ((last-sibling (frame-root-window)))
+    (while (and last-sibling (not (window-live-p last-sibling)))
+      (setq last-sibling (window-last-child last-sibling)))
+    (when last-sibling
+      (select-window last-sibling))))
 
 (evil-define-command evil-window-top-left ()
   "Move the cursor to top-left window."
   :repeat nil
-  (select-window
-   (let ((first-child (window-child (frame-root-window))))
-     (while (not (window-live-p first-child))
-       (setq first-child (window-child first-child)))
-     first-child)))
+  (let ((first-child (window-child (frame-root-window))))
+    (while (and first-child (not (window-live-p first-child)))
+      (setq first-child (window-child first-child)))
+    (when first-child
+      (select-window
+       first-child))))
 
 (evil-define-command evil-window-mru ()
   "Move the cursor to the previous (last accessed) buffer in another window.
@@ -3682,15 +3724,16 @@ If ARG is empty, maximize the current window height."
 and redisplays the current buffer there."
   :repeat nil
   (unless (one-window-p)
-    (let ((b (current-buffer)))
-      (delete-window)
-      (let ((btree (evil-get-buffer-tree (car (window-tree)))))
-        (delete-other-windows)
-        (let ((newwin (selected-window))
-              (subwin (split-window)))
-          (evil-restore-window-tree subwin btree)
-          (set-window-buffer newwin b)
-          (select-window newwin))))
+    (save-excursion
+      (let ((b (current-buffer)))
+        (delete-window)
+        (let ((btree (evil-get-buffer-tree (car (window-tree)))))
+          (delete-other-windows)
+          (let ((newwin (selected-window))
+                (subwin (split-window)))
+            (evil-restore-window-tree subwin btree)
+            (set-window-buffer newwin b)
+            (select-window newwin)))))
     (balance-windows)))
 
 (evil-define-command evil-window-move-far-left ()
@@ -3698,15 +3741,16 @@ and redisplays the current buffer there."
 and redisplays the current buffer there."
   :repeat nil
   (unless (one-window-p)
-    (let ((b (current-buffer)))
-      (delete-window)
-      (let ((btree (evil-get-buffer-tree (car (window-tree)))))
-        (delete-other-windows)
-        (let ((newwin (selected-window))
-              (subwin (split-window-horizontally)))
-          (evil-restore-window-tree subwin btree)
-          (set-window-buffer newwin b)
-          (select-window newwin))))
+    (save-excursion
+      (let ((b (current-buffer)))
+        (delete-window)
+        (let ((btree (evil-get-buffer-tree (car (window-tree)))))
+          (delete-other-windows)
+          (let ((newwin (selected-window))
+                (subwin (split-window-horizontally)))
+            (evil-restore-window-tree subwin btree)
+            (set-window-buffer newwin b)
+            (select-window newwin)))))
     (balance-windows)))
 
 (evil-define-command evil-window-move-far-right ()
@@ -3714,15 +3758,16 @@ and redisplays the current buffer there."
 and redisplays the current buffer there."
   :repeat nil
   (unless (one-window-p)
-    (let ((b (current-buffer)))
-      (delete-window)
-      (let ((btree (evil-get-buffer-tree (car (window-tree)))))
-        (delete-other-windows)
-        (let ((subwin (selected-window))
-              (newwin (split-window-horizontally)))
-          (evil-restore-window-tree subwin btree)
-          (set-window-buffer newwin b)
-          (select-window newwin))))
+    (save-excursion
+      (let ((b (current-buffer)))
+        (delete-window)
+        (let ((btree (evil-get-buffer-tree (car (window-tree)))))
+          (delete-other-windows)
+          (let ((subwin (selected-window))
+                (newwin (split-window-horizontally)))
+            (evil-restore-window-tree subwin btree)
+            (set-window-buffer newwin b)
+            (select-window newwin)))))
     (balance-windows)))
 
 (evil-define-command evil-window-move-very-bottom ()
@@ -3730,15 +3775,16 @@ and redisplays the current buffer there."
 and redisplays the current buffer there."
   :repeat nil
   (unless (one-window-p)
-    (let ((b (current-buffer)))
-      (delete-window)
-      (let ((btree (evil-get-buffer-tree (car (window-tree)))))
-        (delete-other-windows)
-        (let ((subwin (selected-window))
-              (newwin (split-window)))
-          (evil-restore-window-tree subwin btree)
-          (set-window-buffer newwin b)
-          (select-window newwin))))
+    (save-excursion
+      (let ((b (current-buffer)))
+        (delete-window)
+        (let ((btree (evil-get-buffer-tree (car (window-tree)))))
+          (delete-other-windows)
+          (let ((subwin (selected-window))
+                (newwin (split-window)))
+            (evil-restore-window-tree subwin btree)
+            (set-window-buffer newwin b)
+            (select-window newwin)))))
     (balance-windows)))
 
 ;;; Mouse handling
