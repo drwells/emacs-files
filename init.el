@@ -158,6 +158,10 @@
           (lambda ()
             (define-key outline-minor-mode-map [(shift tab)] 'org-cycle)))
 
+;; prm-mode
+(require 'prm-mode "~/.emacs.d/prm-mode.el" nil)
+(add-to-list 'auto-mode-alist '("/*.\.prm$" . prm-mode))
+
 ;; Python stuff
 (add-to-list 'auto-mode-alist '("/*.\.sage" . python-mode))
 (add-to-list 'auto-mode-alist '("/*.\.pyx" . python-mode))
