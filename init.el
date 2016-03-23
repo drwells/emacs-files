@@ -131,7 +131,9 @@
 (eval-after-load 'magit
   '(progn
      (when (not window-system)
-       (set-face-background 'magit-item-highlight "black"))))
+       (set-face-background 'magit-item-highlight "black")
+       (set-face-background 'smerge-refined-added "#194D2C")
+       (set-face-background 'smerge-refined-removed "#6E2424"))))
 (setq magit-auto-revert-mode nil)
 (setq magit-last-seen-setup-instructions "1.4.0")
 
