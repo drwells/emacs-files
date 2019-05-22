@@ -37,7 +37,7 @@
  '(mode-line ((t (:background "dim gray" :foreground "black" :box
                               (:line-width -1 :style released-button))))))
 
-(setq font-lock)
+(setq font-lock t)
 (set-face-background 'highlight "grey20") ;; override nasty green color
 (set-face-foreground 'minibuffer-prompt "thistle1")
 (set-face-foreground 'font-lock-negation-char-face "red")

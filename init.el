@@ -96,6 +96,9 @@
 ;; eshell stuff
 (add-hook 'eshell-mode-hook (lambda () (smartparens-mode t)))
 
+;; GDB
+(setq gdb-display-io-nopopup t) ;; disable the popup window
+
 ;; Haskell stuff
 (setq auto-mode-alist (append '(("/*.\.hs$" . haskell-mode)) auto-mode-alist))
 (setq haskell-program-name "/usr/bin/ghci")
@@ -197,6 +200,23 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (yasnippet smex smartparens nimrod-mode markdown-mode magit ipython highlight-parentheses haskell-mode goto-last-change evil d-mode company-irony cmake-font-lock auto-complete auctex)))
  '(safe-local-variable-values
    (quote
-    ((company-clang-arguments "-I/home/drwells/Applications/dealii-dev/include/")))))
+    ((eval add-hook
+           (quote before-save-hook)
+           (quote time-stamp))
+     (projectile-project-compilation-cmd . "make -kwj8")
+     (projectile-project-compilation-dir . "../ibamr-objs-dbg")
+     (encoding . utf-8)
+     (company-clang-arguments "-I/home/drwells/Applications/dealii-dev/include/")))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(match ((t (:background "midnight blue"))))
+ '(mode-line ((t (:background "dim gray" :foreground "black" :box (:line-width -1 :style released-button)))))
+ '(term-color-blue ((t (:foreground "DodgerBlue1")))))
